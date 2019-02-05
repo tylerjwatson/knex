@@ -132,6 +132,9 @@ export default function makeKnex(client) {
   client.on('query', function(obj) {
     knex.emit('query', obj)
   })
+  client.on('before-query', function(obj) {
+    knex.emit('before-query', obj)
+  })
   client.on('query-error', function(err, obj) {
     knex.emit('query-error', err, obj)
   })

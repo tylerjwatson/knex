@@ -26,9 +26,15 @@ assign(Runner.prototype, {
     return Promise.using(this.ensureConnection(), function(connection) {
       runner.connection = connection;
 
-      runner.client.emit('start', runner.builder)
-      runner.builder.emit('start', runner.builder)
-      const sql = runner.builder.toSQL();
+      const queryContext = { query: runner.builder };
+
+      runner.client.emit('start', queryContext.query)
+      runner.builder.emit('start', queryContext.query)
+
+      runner.client.emit('before-query', queryContext)
+      runner.builder.emit('before-query', queryContext)
+	
+      const sql = queryContext.query.toSQL();
 
       if (runner.builder._debug) {
         runner.client.logger.debug(sql);
@@ -37,8 +43,8 @@ assign(Runner.prototype, {
       if (isArray(sql)) {
         return runner.queryArray(sql);
       }
-      return runner.query(sql);
 
+      return runner.query(sql);
     })
 
     // If there are any "error" listeners, we fire an error event
