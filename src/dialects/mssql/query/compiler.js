@@ -186,8 +186,8 @@ assign(QueryCompiler_MSSQL.prototype, {
       schema = this.client.customWrapIdentifier(schema, identity);
     }
 
-    let sql =`select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ?`;
-    const bindings = [table, this.client.database()];
+    let sql =`select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = DB_NAME()`;
+    const bindings = [table];
 
     if (schema) {
       sql += ' and table_schema = ?';
