@@ -8,9 +8,9 @@
 
 /// <reference types="node" />
 
-import events = require("events");
-import stream = require("stream");
-import Bluebird = require("bluebird");
+import events = require('events');
+import stream = require('stream');
+import Bluebird = require('bluebird');
 
 // # Generic type-level utilities
 
@@ -49,7 +49,7 @@ type UnionToIntersection<U> = (U extends any
   ? I
   : never;
 
-type ComparisionOperator = "=" | ">" | ">=" | "<" | "<=" | "<>";
+type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
 
 // If T is an array, get the type of member, else fall back to never
 type ArrayMember<T> = T extends (infer M)[] ? M : never;
@@ -327,7 +327,7 @@ declare namespace Knex {
   //
 
   interface QueryInterface<TRecord extends {} = any, TResult = unknown[]>
-    extends PromiseLike<TResult> {
+    extends Bluebird<TResult> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
@@ -1107,14 +1107,14 @@ declare namespace Knex {
       ColumnNameQueryBuilder<TRecord, TResult> {}
 
   interface OrderBy<TRecord = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, order?: "asc" | "desc"): QueryBuilder<
+    (columnName: keyof TRecord, order?: 'asc' | 'desc'): QueryBuilder<
       TRecord,
       TResult
     >;
     (columnName: string, order?: string): QueryBuilder<TRecord, TResult>;
     (
       columnDefs: Array<
-        keyof TRecord | { column: keyof TRecord; order?: "asc" | "desc" }
+        keyof TRecord | { column: keyof TRecord; order?: 'asc' | 'desc' }
       >
     ): QueryBuilder<TRecord, TResult>;
     (
@@ -1165,7 +1165,7 @@ declare namespace Knex {
   interface ColumnNameQueryBuilder<TRecord = any, TResult = unknown[]> {
     // When all columns are known to be keys of original record,
     // we can extend our selection by these columns
-    (columnName: "*"): QueryBuilder<
+    (columnName: '*'): QueryBuilder<
       TRecord,
       DeferredKeySelection<TRecord, string>[]
     >;
@@ -1236,7 +1236,8 @@ declare namespace Knex {
 
   interface Raw<TResult = any>
     extends events.EventEmitter,
-      ChainableInterface<ResolveResult<TResult>> {
+      ChainableInterface<ResolveResult<TResult>>,
+      Bluebird<TResult> {
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
@@ -1320,7 +1321,7 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T = any> extends Bluebird<T> {
+  interface ChainableInterface<T = any> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
@@ -1336,7 +1337,6 @@ declare namespace Knex {
       writable: T,
       options?: { [key: string]: any }
     ): stream.PassThrough;
-    asCallback(callback: Function): this;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any>
@@ -1358,7 +1358,7 @@ declare namespace Knex {
   // Schema builder
   //
 
-  interface SchemaBuilder extends ChainableInterface<void> {
+  interface SchemaBuilder extends ChainableInterface<void>, Bluebird<void> {
     createTable(
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
