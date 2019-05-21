@@ -3,10 +3,12 @@
   "version": "0.14.6",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
+  "types": "types/index.d.ts",
   "engines": {
     "node": ">=6"
   },
   "dependencies": {
+    "@types/node": "^12.0.2",
     "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
     "chalk": "2.3.2",
