@@ -8,9 +8,9 @@
 
 /// <reference types="node" />
 
-import events = require('events');
-import stream = require('stream');
-import Bluebird = require('bluebird');
+import events = require("events");
+import stream = require("stream");
+import Bluebird = require("bluebird");
 
 // # Generic type-level utilities
 
@@ -49,7 +49,7 @@ type UnionToIntersection<U> = (U extends any
   ? I
   : never;
 
-type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
+type ComparisionOperator = "=" | ">" | ">=" | "<" | "<=" | "<>";
 
 // If T is an array, get the type of member, else fall back to never
 type ArrayMember<T> = T extends (infer M)[] ? M : never;
@@ -265,10 +265,12 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   raw: Knex.RawBuilder;
   transaction<T>(
-    transactionScope: (trx: Knex.Transaction) => Promise<T> | Bluebird<T> | void
-  ): Bluebird<T>;
+    transactionScope: (
+      trx: Knex.Transaction
+    ) => Promise<T> | PromiseLike<T> | void
+  ): PromiseLike<T>;
   destroy(callback: Function): void;
-  destroy(): Bluebird<void>;
+  destroy(): PromiseLike<void>;
   batchInsert(
     tableName: Knex.TableDescriptor,
     data: any[],
@@ -327,7 +329,7 @@ declare namespace Knex {
   //
 
   interface QueryInterface<TRecord extends {} = any, TResult = unknown[]>
-    extends Bluebird<TResult> {
+    extends PromiseLike<TResult> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
@@ -1107,14 +1109,14 @@ declare namespace Knex {
       ColumnNameQueryBuilder<TRecord, TResult> {}
 
   interface OrderBy<TRecord = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, order?: 'asc' | 'desc'): QueryBuilder<
+    (columnName: keyof TRecord, order?: "asc" | "desc"): QueryBuilder<
       TRecord,
       TResult
     >;
     (columnName: string, order?: string): QueryBuilder<TRecord, TResult>;
     (
       columnDefs: Array<
-        keyof TRecord | { column: keyof TRecord; order?: 'asc' | 'desc' }
+        keyof TRecord | { column: keyof TRecord; order?: "asc" | "desc" }
       >
     ): QueryBuilder<TRecord, TResult>;
     (
@@ -1165,7 +1167,7 @@ declare namespace Knex {
   interface ColumnNameQueryBuilder<TRecord = any, TResult = unknown[]> {
     // When all columns are known to be keys of original record,
     // we can extend our selection by these columns
-    (columnName: '*'): QueryBuilder<
+    (columnName: "*"): QueryBuilder<
       TRecord,
       DeferredKeySelection<TRecord, string>[]
     >;
@@ -1217,7 +1219,8 @@ declare namespace Knex {
 
   type RawBinding = Value | QueryBuilder;
 
-  interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
+  interface RawQueryBuilder<TRecord = any, TResult = unknown[]>
+    extends PromiseLike<TResult> {
     <TResult2 = SafePartial<TRecord>[]>(
       sql: string,
       ...bindings: RawBinding[]
@@ -1236,8 +1239,8 @@ declare namespace Knex {
 
   interface Raw<TResult = any>
     extends events.EventEmitter,
-      ChainableInterface<ResolveResult<TResult>>,
-      Bluebird<TResult> {
+      ChainableInterface<TResult>,
+      PromiseLike<TResult> {
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
@@ -1275,16 +1278,14 @@ declare namespace Knex {
   interface QueryBuilder<
     TRecord extends {} = any,
     TResult = SafePartial<TRecord>[]
-  >
-    extends QueryInterface<TRecord, TResult>,
-      ChainableInterface<ResolveResult<TResult>> {
+  > extends QueryInterface<TRecord, TResult>, ChainableInterface<TResult> {
     // [TODO] Doesn't seem to be available
     // or: QueryBuilder;
 
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
-    columnInfo(column?: keyof TRecord): Bluebird<ColumnInfo>;
+    columnInfo(column?: keyof TRecord): PromiseLike<ColumnInfo>;
 
     forUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forUpdate(tableNames: string[]): QueryBuilder<TRecord, TResult>;
@@ -1321,17 +1322,17 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T = any> {
+  interface ChainableInterface<T = any> extends PromiseLike<T> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
     debug(enabled: boolean): this;
     transacting(trx: Transaction): this;
-    stream(handler: (readable: stream.PassThrough) => any): Bluebird<any>;
+    stream(handler: (readable: stream.PassThrough) => any): PromiseLike<any>;
     stream(
       options: { [key: string]: any },
       handler: (readable: stream.PassThrough) => any
-    ): Bluebird<any>;
+    ): PromiseLike<any>;
     stream(options?: { [key: string]: any }): stream.PassThrough;
     pipe<T extends NodeJS.WritableStream>(
       writable: T,
@@ -1349,7 +1350,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
     savepoint<T = any>(
       transactionScope: (trx: Transaction) => any
-    ): Bluebird<T>;
+    ): PromiseLike<T>;
     commit(value?: any): QueryBuilder<TRecord, TResult>;
     rollback(error?: any): QueryBuilder<TRecord, TResult>;
   }
@@ -1358,7 +1359,7 @@ declare namespace Knex {
   // Schema builder
   //
 
-  interface SchemaBuilder extends ChainableInterface<void>, Bluebird<void> {
+  interface SchemaBuilder extends ChainableInterface<void>, PromiseLike<void> {
     createTable(
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
@@ -1371,14 +1372,14 @@ declare namespace Knex {
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
-    renameTable(oldTableName: string, newTableName: string): Bluebird<void>;
+    renameTable(oldTableName: string, newTableName: string): PromiseLike<void>;
     dropTable(tableName: string): SchemaBuilder;
-    hasTable(tableName: string): Bluebird<boolean>;
-    hasColumn(tableName: string, columnName: string): Bluebird<boolean>;
+    hasTable(tableName: string): PromiseLike<boolean>;
+    hasColumn(tableName: string, columnName: string): PromiseLike<boolean>;
     table(
       tableName: string,
       callback: (tableBuilder: AlterTableBuilder) => any
-    ): Bluebird<void>;
+    ): PromiseLike<void>;
     dropTableIfExists(tableName: string): SchemaBuilder;
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
@@ -1699,12 +1700,12 @@ declare namespace Knex {
   }
 
   interface Migrator {
-    make(name: string, config?: MigratorConfig): Bluebird<string>;
-    latest(config?: MigratorConfig): Bluebird<any>;
-    rollback(config?: MigratorConfig, all?: boolean): Bluebird<any>;
-    status(config?: MigratorConfig): Bluebird<number>;
-    currentVersion(config?: MigratorConfig): Bluebird<string>;
-    up(config?: MigratorConfig): Bluebird<any>;
+    make(name: string, config?: MigratorConfig): PromiseLike<string>;
+    latest(config?: MigratorConfig): PromiseLike<any>;
+    rollback(config?: MigratorConfig, all?: boolean): PromiseLike<any>;
+    status(config?: MigratorConfig): PromiseLike<number>;
+    currentVersion(config?: MigratorConfig): PromiseLike<string>;
+    up(config?: MigratorConfig): PromiseLike<any>;
   }
 
   interface FunctionHelper {
