@@ -330,6 +330,8 @@ declare namespace Knex {
 
   interface QueryInterface<TRecord extends {} = any, TResult = unknown[]>
     extends PromiseLike<TResult> {
+    queryContext(context: any): QueryInterface<TRecord, TResult>;
+
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
