@@ -1,5 +1,5 @@
 {
-  "name": "knex",
+  "name": "@tylerjwatson/knex",
   "version": "0.20.0",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
@@ -94,7 +94,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tgriesser/knex.git"
+    "url": "git://github.com/tylerjwatson/knex.git"
   },
   "homepage": "https://knexjs.org",
   "keywords": [
@@ -171,5 +171,8 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }
